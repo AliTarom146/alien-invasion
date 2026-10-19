@@ -1,3 +1,4 @@
+
 """Run the Alien Invasion game."""
 
 import sys
@@ -6,7 +7,7 @@ import pygame
 
 from settings import Settings
 from ship import Ship
-from laser import Laser
+from arsenal import Arsenal
 
 
 class AlienInvasion:
@@ -33,8 +34,8 @@ class AlienInvasion:
             (self.settings.screen_width, self.settings.screen_height),
         )
 
-        self.ship = Ship(self.screen)
-        self.lasers = []
+        self.ship = Ship(self)
+        self.arsenal = Arsenal(self)
 
         self.laser_sound = pygame.mixer.Sound(
             self.settings.laser_sound
@@ -45,7 +46,7 @@ class AlienInvasion:
         while True:
             self._check_events()
             self.ship.update()
-            self._update_lasers()
+            self.arsenal.update()
             self._update_screen()
             self.clock.tick(self.settings.fps)
 
@@ -62,9 +63,7 @@ class AlienInvasion:
                 elif event.key == pygame.K_LEFT:
                     self.ship.moving_left = True
                 elif event.key == pygame.K_SPACE:
-                    if len(self.lasers) < self.settings.laser_limit:
-                        laser = Laser(self.screen, self.ship)
-                        self.lasers.append(laser)
+                    if self.ship.fire():
                         self.laser_sound.play()
                 elif event.key == pygame.K_q:
                     pygame.quit()
@@ -76,22 +75,11 @@ class AlienInvasion:
                 elif event.key == pygame.K_LEFT:
                     self.ship.moving_left = False
 
-    def _update_lasers(self):
-        """Move lasers and remove those that leave the screen."""
-        for laser in self.lasers[:]:
-            laser.update()
-
-            if laser.rect.bottom < 0:
-                self.lasers.remove(laser)
-
     def _update_screen(self):
         """Draw the game objects and update the display."""
         self.screen.blit(self.background, (0, 0))
         self.ship.draw()
-
-        for laser in self.lasers:
-            laser.draw()
-
+        self.arsenal.draw()
         pygame.display.flip()
 
 
